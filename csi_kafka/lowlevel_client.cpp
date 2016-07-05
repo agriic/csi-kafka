@@ -103,15 +103,16 @@ namespace csi {
       _io_service(io_service),
       _resolver(io_service),
       _timer(io_service),
+      _timeout(boost::posix_time::milliseconds(1000)),
       _connect_timeout_timer(io_service),
       _socket(io_service),
       _connected(false),
-      _connection_in_progress(false),
       _resolve_in_progress(false),
+      _connection_in_progress(false),
       _tx_in_progress(false),
       _rx_in_progress(false),
-      _timeout(boost::posix_time::milliseconds(1000)),
-      _next_correlation_id(1) {
+      _next_correlation_id(1)
+    {
       _timer.expires_from_now(_timeout);
       _timer.async_wait(boost::bind(&lowlevel_client::handle_timer, this, boost::asio::placeholders::error));
     }

@@ -9,13 +9,14 @@ namespace csi {
   namespace kafka {
     highlevel_producer::highlevel_producer(boost::asio::io_service& io_service, const std::string& topic, int32_t required_acks, int32_t tx_timeout, int32_t max_packet_size) :
       _ios(io_service),
-      _timer(io_service),
-      _timeout(boost::posix_time::milliseconds(5000)),
-      _meta_client(io_service, topic),
       _topic(topic),
       _required_acks(required_acks),
       _tx_timeout(tx_timeout),
-      _max_packet_size(max_packet_size) {}
+      _max_packet_size(max_packet_size),
+      _timer(io_service),
+      _timeout(boost::posix_time::milliseconds(5000)),
+      _meta_client(io_service, topic)
+      {}
 
     highlevel_producer::~highlevel_producer() {
       _timer.cancel();
@@ -161,7 +162,7 @@ namespace csi {
             }
 
             //lets send all things that were collected before connecting
-            std::deque<tx_item> ::reverse_iterator cursor = _tx_queue.rbegin();
+//            std::deque<tx_item> ::reverse_iterator cursor = _tx_queue.rbegin();
 
             while(_tx_queue.size()) {
               tx_item& item = *(_tx_queue.end() - 1);
@@ -217,7 +218,7 @@ namespace csi {
       if(!message->key.is_null()) {
         // calc a hash to get partition
         boost::crc_32_type result;
-        uint32_t keysize = (uint32_t) message->key.size();
+//        uint32_t keysize = (uint32_t) message->key.size();
         result.process_bytes(&message->key[0], message->key.size());
         hash = result.checksum();
       } else if(!message->value.is_null()) {

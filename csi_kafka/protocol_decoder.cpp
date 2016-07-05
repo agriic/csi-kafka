@@ -1,20 +1,21 @@
 #include <boost/asio.hpp>
-#include <boost/endian/arithmetic.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/crc.hpp>
+#include <arpa/inet.h>
 
 //#include <iostream>
 
 #include "protocol_decoder.h"
+#include "internal/utility.h"
 
 namespace csi {
   namespace kafka {
     namespace internal
     {
       inline void decode_i08(std::istream& src, uint8_t* dst) { src.read((char*) dst, 1); }
-      inline void decode_i16(std::istream& src, int16_t& dst) { u_short data; src.read((char*) &data, 2); dst = (int16_t) ntohs(data); }
-      inline void decode_i32(std::istream& src, int32_t& dst) { u_long data;  src.read((char*) &data, 4); dst = (int32_t) ntohl(data); }
-      inline void decode_i64(std::istream& src, int64_t& dst) { boost::endian::big_int64_t data; src.read((char*) &data, 8);  dst = data; }
+      inline void decode_i16(std::istream& src, int16_t& dst) { uint16_t data; src.read((char*) &data, 2); dst = (int16_t) ntohs(data); }
+      inline void decode_i32(std::istream& src, int32_t& dst) { uint32_t data; src.read((char*) &data, 4); dst = (int32_t) ntohl(data); }
+      inline void decode_i64(std::istream& src, int64_t& dst) { uint64_t data; src.read((char*) &data, 8); dst = change_endianess(data); }
 
       // all arrays & strings can be NULL also which is different from empty...
       inline void decode_string(std::istream& src, std::string& dst) {
@@ -212,9 +213,9 @@ namespace csi {
           internal::decode_i16(str, partition_data->error_code);
           if(partition_data->error_code)
             resulting_error_code = partition_data->error_code;
-          internal::decode_i64(str, partition_data->highwater_mark_offset);  // ska vi läsa detta om error code är !=0 TBD
+          internal::decode_i64(str, partition_data->highwater_mark_offset);
           int32_t  message_set_size = 0;
-          internal::decode_i32(str, message_set_size); // ska vi läsa detta om error code är !=0 TBD
+          internal::decode_i32(str, message_set_size);
 
           //it's possible that we have a partial message - dont trust message_set_size
           size_t bytes_to_parse = std::min<size_t>(message_set_size, len - str.tellg());

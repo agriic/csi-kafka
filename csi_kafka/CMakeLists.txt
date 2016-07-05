@@ -26,7 +26,7 @@ SET(LIB_SRCS
 	kafka.cpp
     kafka_error_code.h
     kafka_error_code.cpp
-	)
+	internal/utility.cpp
+)
 	
 add_library (csi-kafka STATIC ${LIB_SRCS})
-

@@ -10,11 +10,12 @@ namespace csi {
       _ios(io_service),
       _timer(io_service),
       _timeout(boost::posix_time::milliseconds(5000)),
-      _meta_client(io_service, topic),
-      _consumer_meta_client(io_service, topic),
       _topic(topic),
       _rx_timeout(rx_timeout),
-      _max_packet_size(max_packet_size) {
+      _max_packet_size(max_packet_size),
+      _meta_client(io_service, topic),
+      _consumer_meta_client(io_service, topic)
+    {
       // this is an absurd small max size
       assert(max_packet_size > 4);
     }
@@ -23,12 +24,13 @@ namespace csi {
       _ios(io_service),
       _timer(io_service),
       _timeout(boost::posix_time::milliseconds(5000)),
-      _meta_client(io_service, topic),
-      _consumer_meta_client(io_service, topic),
       _topic(topic),
       _rx_timeout(rx_timeout),
       _max_packet_size(max_packet_size),
-      _partitions_mask(partion_mask) {
+      _meta_client(io_service, topic),
+      _partitions_mask(partion_mask),
+      _consumer_meta_client(io_service, topic)
+    {
       // this is an absurd small max size
       assert(max_packet_size > 4);
     }

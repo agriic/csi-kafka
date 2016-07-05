@@ -10,21 +10,22 @@ namespace csi {
       _ios(io_service),
       _client(io_service),
       _topic(topic),
-      _partition(partition),
-      _max_packet_size(max_packet_size),
-      _next_offset(kafka::latest_offsets),
       _rx_timeout(rx_timeout),
       _rx_in_progress(false),
+      _partition(partition),
+      _next_offset(kafka::latest_offsets),
       _transient_failure(false),
-      _metrics_rx_kb_sec(boost::accumulators::tag::rolling_window::window_size = 10),
-      _metrics_rx_msg_sec(boost::accumulators::tag::rolling_window::window_size = 10),
-      _metrics_rx_roundtrip(boost::accumulators::tag::rolling_window::window_size = 10),
+      _max_packet_size(max_packet_size),
       _metrics_timer(io_service),
       _metrics_timeout(boost::posix_time::milliseconds(1000)),
+      __metrics_last_total_rx_kb(0),
+      __metrics_last_total_rx_msg(0),
       _metrics_total_rx_kb(0),
       _metrics_total_rx_msg(0),
-      __metrics_last_total_rx_kb(0),
-      __metrics_last_total_rx_msg(0) {
+      _metrics_rx_kb_sec(boost::accumulators::tag::rolling_window::window_size = 10),
+      _metrics_rx_msg_sec(boost::accumulators::tag::rolling_window::window_size = 10),
+      _metrics_rx_roundtrip(boost::accumulators::tag::rolling_window::window_size = 10)
+    {
       _metrics_timer.expires_from_now(_metrics_timeout);
       _metrics_timer.async_wait([this](const boost::system::error_code& ec) { handle_metrics_timer(ec); });
     }

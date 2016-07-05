@@ -77,30 +77,61 @@ int main(int argc, char** argv) {
   consumer.connect_forever(brokers);
   consumer.set_offset(csi::kafka::earliest_available_offset);
 
-  boost::thread do_log([&consumer] {
+  boost::thread do_log(
+  [&consumer] 
+  {
     boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::rolling_mean> > acc(boost::accumulators::tag::rolling_window::window_size = 10);
-    while(true) {
-      boost::this_thread::sleep(boost::posix_time::seconds(1));
+    while(true) 
+    {
+        boost::this_thread::sleep(boost::posix_time::seconds(1));
 
-      std::vector<csi::kafka::highlevel_consumer::metrics>  metrics = consumer.get_metrics();
-      uint32_t rx_msg_sec_total = 0;
-      uint32_t rx_kb_sec_total = 0;
-      for(std::vector<csi::kafka::highlevel_consumer::metrics>::const_iterator i = metrics.begin(); i != metrics.end(); ++i) {
-        //std::cerr << "\t partiton:" << (*i).partition << "\t" << (*i).rx_msg_sec << " msg/s \t" << ((*i).rx_kb_sec/1024) << "MB/s \troundtrip:" << (*i).rx_roundtrip << " ms" << std::endl;
-        rx_msg_sec_total += (*i).rx_msg_sec;
-        rx_kb_sec_total += (*i).rx_kb_sec;
-      }
-      BOOST_LOG_TRIVIAL(info) << "RX: " << rx_msg_sec_total << " msg/s \t" << (rx_kb_sec_total / 1024) << "MB/s";
+        std::vector<csi::kafka::highlevel_consumer::metrics>  metrics = consumer.get_metrics();
+        uint32_t rx_msg_sec_total = 0;
+        uint32_t rx_kb_sec_total = 0;
+        for(std::vector<csi::kafka::highlevel_consumer::metrics>::const_iterator i = metrics.begin(); i != metrics.end(); ++i) 
+        {
+            //std::cerr << "\t partiton:" << (*i).partition << "\t" << (*i).rx_msg_sec << " msg/s \t" << ((*i).rx_kb_sec/1024) << "MB/s \troundtrip:" << (*i).rx_roundtrip << " ms" << std::endl;
+            rx_msg_sec_total += (*i).rx_msg_sec;
+            rx_kb_sec_total += (*i).rx_kb_sec;
+        }
+//        BOOST_LOG_TRIVIAL(info) << "RX: " << rx_msg_sec_total << " msg/s \t" << (rx_kb_sec_total / 1024) << "MB/s";
     }
-  });
+  }
+  );
 
 
-  consumer.stream_async([](const boost::system::error_code& ec1, csi::kafka::error_codes ec2, std::shared_ptr<csi::kafka::fetch_response::topic_data::partition_data> response) {
-    if(ec1 || ec2) {
-      BOOST_LOG_TRIVIAL(error) << "stream failed ec1::" << ec1 << " ec2" << csi::kafka::to_string(ec2);
-      return;
-    }
-  });
+    consumer.stream_async(
+        [](const boost::system::error_code& ec1,
+           csi::kafka::error_codes ec2,
+           std::shared_ptr<csi::kafka::fetch_response::topic_data::partition_data> response)
+        {
+            if(ec1 || ec2)
+            {
+                std::cout << "stream failed ec1::" << ec1 << " ec2" << csi::kafka::to_string(ec2) << std::endl;
+                return;
+            }
+
+            for (auto& m : response->messages)
+            {
+                std::cout << "O(" << m->offset << "): ";
+
+                std::string key, value;
+
+                if(!m->key.is_null())
+                {
+                    key.assign(reinterpret_cast<char*>(m->key.data()), m->key.size());
+                    std::cout << key << " >> ";
+                }
+
+                if(!m->value.is_null())
+                {
+                    value.assign(reinterpret_cast<char*>(m->value.data()), m->value.size());
+                    std::cout << value;
+                }
+                std::cout << std::endl;
+            }
+        }
+    );
 
   while(true)
     boost::this_thread::sleep(boost::posix_time::seconds(30));

@@ -11,21 +11,22 @@ namespace csi {
       _client(io_service),
       _topic(topic),
       _partition_id(partition),
-      _required_acks(required_acks),
-      _tx_timeout(timeout),
-      _max_packet_size(max_packet_size),
       _tx_queue_byte_size(0),
       _tx_in_progress(false),
       _try_send_posted(false),
-      _metrics_tx_kb_sec(boost::accumulators::tag::rolling_window::window_size = 50),
-      _metrics_tx_msg_sec(boost::accumulators::tag::rolling_window::window_size = 50),
-      _metrics_tx_roundtrip(boost::accumulators::tag::rolling_window::window_size = 10),
+      _required_acks(required_acks),
+      _tx_timeout(timeout),
+      _max_packet_size(max_packet_size),
       _metrics_timer(io_service),
       _metrics_timeout(boost::posix_time::milliseconds(100)),
+      __metrics_last_total_tx_kb(0),
+      __metrics_last_total_tx_msg(0),
       _metrics_total_tx_kb(0),
       _metrics_total_tx_msg(0),
-      __metrics_last_total_tx_kb(0),
-      __metrics_last_total_tx_msg(0) {
+      _metrics_tx_kb_sec(boost::accumulators::tag::rolling_window::window_size = 50),
+      _metrics_tx_msg_sec(boost::accumulators::tag::rolling_window::window_size = 50),
+      _metrics_tx_roundtrip(boost::accumulators::tag::rolling_window::window_size = 10)
+    {
       if(_max_packet_size <0)
         _max_packet_size = (csi::kafka::basic_call_context::MAX_BUFFER_SIZE - 1000);
       if(_max_packet_size >(csi::kafka::basic_call_context::MAX_BUFFER_SIZE - 1000))

@@ -1,8 +1,9 @@
-#include <boost/endian/arithmetic.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/crc.hpp>
+#include <arpa/inet.h>
 
 #include "protocol_encoder.h"
+#include "internal/utility.h"
 
 namespace csi {
   namespace kafka {
@@ -15,17 +16,17 @@ namespace csi {
       }
 
       inline void encode_i16(boost::iostreams::stream<boost::iostreams::array_sink>& stream, int16_t val) {
-        boost::endian::big_int16_t bev(val);
+        int16_t bev = ntohs(val);
         stream.write((const char*) &bev, 2);
       }
 
       inline void encode_i32(boost::iostreams::stream<boost::iostreams::array_sink>& stream, int32_t val) {
-        boost::endian::big_int32_t bev(val);
+        int32_t bev = ntohl(val);
         stream.write((const char*) &bev, 4);
       }
 
       inline void encode_i64(boost::iostreams::stream<boost::iostreams::array_sink>& stream, int64_t val) {
-        boost::endian::big_int64_t bev(val);
+        uint64_t bev = change_endianess(val);
         stream.write((const char*) &bev, 8);
       }
 
