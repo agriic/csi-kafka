@@ -61,11 +61,11 @@ namespace csi {
 
     void highlevel_consumer::connect_async(const std::vector<broker_address>& brokers, connect_callback cb) {
 
-      BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async START";
+//      BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async START";
       _meta_client.connect_async(brokers, [this, cb](const boost::system::error_code& ec) {
-        BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer METADATA connect_async CB";
+//        BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer METADATA connect_async CB";
         if(!ec) {
-          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _connect_async STARTING";
+//          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _connect_async STARTING";
           _connect_async(cb);
         } // connect ok?
       }); //connect_async
@@ -73,7 +73,7 @@ namespace csi {
 
     void highlevel_consumer::_connect_async(connect_callback cb) {
       _meta_client.get_metadata_async({ _topic }, [this, cb](rpc_result<metadata_response> result) {
-        BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _meta_client.get_metadata_async() CALLBACK ENTERED...";
+//        BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _meta_client.get_metadata_async() CALLBACK ENTERED...";
         handle_response(result);
         if(!result) {
           //std::vector < boost::function <void( const boost::system::error_code&)>> f;
@@ -101,20 +101,20 @@ namespace csi {
             }
           }
 
-          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async / waterfall START";
+//          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async / waterfall START";
           csi::async::waterfall(*work, [work, cb](const boost::system::error_code& ec) // add iterator for last function
           {
-            BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async / waterfall CB ec=" << ec;
+//            BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async / waterfall CB ec=" << ec;
             if(ec) {
               BOOST_LOG_TRIVIAL(warning) << "highlevel_consumer connect_async can't connect to broker ec:" << ec;
             }
             cb(ec);
-            BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async / waterfall EXIT";
+//            BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer connect_async / waterfall EXIT";
           }); //waterfall
-          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _meta_client.get_metadata_async() CB EXIT";
+//          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _meta_client.get_metadata_async() CB EXIT";
         } // get_metadata_async ok?
         else {
-          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _meta_client.get_metadata_async() error cb";
+//          BOOST_LOG_TRIVIAL(trace) << "highlevel_consumer _meta_client.get_metadata_async() error cb";
           cb(result.ec.ec1);
         }
       });
