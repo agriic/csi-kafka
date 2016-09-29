@@ -191,7 +191,8 @@ namespace csi {
         _connected = false;
         boost::system::error_code ec;
         _socket.cancel(ec);
-        _socket.close();
+        _socket.shutdown(_socket.shutdown_both, ec);
+        _socket.close(ec);
       }
     }
 
@@ -204,7 +205,8 @@ namespace csi {
       _connected = false;
       boost::system::error_code ec;
       _socket.cancel(ec);
-      _socket.close();
+      _socket.shutdown(_socket.shutdown_both, ec);
+      _socket.close(ec);
       return true;
     }
 
