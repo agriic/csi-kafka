@@ -70,6 +70,10 @@ namespace csi {
       bool                            _transient_failure;
       size_t                          _max_packet_size;
 
+        boost::asio::deadline_timer			          _ping_timer;
+        boost::posix_time::time_duration              _ping_timeout;
+        void handle_ping_timer(const boost::system::error_code& ec);
+
       //METRICS
       typedef boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::rolling_mean> >   metrics_accumulator_t;
       void handle_metrics_timer(const boost::system::error_code& ec);

@@ -16,6 +16,8 @@ namespace csi {
       _next_offset(kafka::latest_offsets),
       _transient_failure(false),
       _max_packet_size(max_packet_size),
+      _ping_timer(io_service),
+      _ping_timeout(boost::posix_time::seconds(60)),
       _metrics_timer(io_service),
       _metrics_timeout(boost::posix_time::milliseconds(1000)),
       __metrics_last_total_rx_kb(0),
@@ -28,12 +30,36 @@ namespace csi {
     {
       _metrics_timer.expires_from_now(_metrics_timeout);
       _metrics_timer.async_wait([this](const boost::system::error_code& ec) { handle_metrics_timer(ec); });
+
+        _ping_timer.expires_from_now(_ping_timeout);
+        _ping_timer.async_wait(boost::bind(&lowlevel_consumer::handle_ping_timer, this, _1));
     }
 
     lowlevel_consumer::~lowlevel_consumer() {
       _client.close();
       _metrics_timer.cancel();
+        _ping_timer.cancel();
     }
+
+      void lowlevel_consumer::handle_ping_timer(const boost::system::error_code& ec) {
+
+          _ping_timer.expires_from_now(_ping_timeout);
+          _ping_timer.async_wait(boost::bind(&lowlevel_consumer::handle_ping_timer, this, _1));
+
+          if (ec) {
+              BOOST_LOG_TRIVIAL(error) << "Ping timer error - " << ec.message();
+              return;
+          }
+
+          if (_client.is_connected())
+          {
+              BOOST_LOG_TRIVIAL(info) << "KAFKA Metadata ping timer";
+
+              get_metadata_async([](rpc_result<metadata_response> r){
+                  BOOST_LOG_TRIVIAL(info) << "KAFKA Metadata ping timer -> Response received";
+              });
+          }
+      }
 
     void lowlevel_consumer::handle_metrics_timer(const boost::system::error_code& ec) {
       if(ec)
