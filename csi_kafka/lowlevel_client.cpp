@@ -111,7 +111,8 @@ namespace csi {
       _connection_in_progress(false),
       _tx_in_progress(false),
       _rx_in_progress(false),
-      _next_correlation_id(1)
+      _next_correlation_id(1),
+      _alreadyClosing(false)
     {
       _timer.expires_from_now(_timeout);
       _timer.async_wait(boost::bind(&lowlevel_client::handle_timer, this, boost::asio::placeholders::error));
@@ -186,28 +187,26 @@ namespace csi {
 
     void  lowlevel_client::handle_connect_timeout(const boost::system::error_code& ec) {
       if(!ec) {
-        if(_resolve_in_progress)
-          _resolver.cancel();
-        _connected = false;
-        boost::system::error_code ec;
-        _socket.cancel(ec);
-        _socket.shutdown(_socket.shutdown_both, ec);
-        _socket.close(ec);
+        close();
       }
     }
 
     bool lowlevel_client::close() {
-      if(_resolve_in_progress)
-        _resolver.cancel();
+        if (!_alreadyClosing.exchange(true)) {
+            if(_resolve_in_progress)
+                _resolver.cancel();
 
-      _connect_timeout_timer.cancel(); // ec?
+            boost::system::error_code ec;
+            _connect_timeout_timer.cancel(ec); // ec?
+            _connected = false;
 
-      _connected = false;
-      boost::system::error_code ec;
-      _socket.cancel(ec);
-      _socket.shutdown(_socket.shutdown_both, ec);
-      _socket.close(ec);
-      return true;
+            _socket.cancel(ec);
+            _socket.shutdown(_socket.shutdown_both, ec);
+            _socket.close(ec);
+
+            _alreadyClosing = false;
+        }
+        return true;
     }
 
     boost::asio::ip::tcp::endpoint  lowlevel_client::remote_endpoint(boost::system::error_code ec) {

@@ -109,6 +109,9 @@ namespace csi {
       bool                                      _tx_in_progress;
       bool                                      _rx_in_progress;
       int32_t                                   _next_correlation_id;
+
+        std::atomic<bool>                       _alreadyClosing;
+
     };
   } // kafka
 } // csi
