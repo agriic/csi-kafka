@@ -112,7 +112,7 @@ namespace csi {
       _tx_in_progress(false),
       _rx_in_progress(false),
       _next_correlation_id(1),
-      _alreadyClosing(false)
+      _already_closing(false)
     {
       _timer.expires_from_now(_timeout);
       _timer.async_wait(boost::bind(&lowlevel_client::handle_timer, this, boost::asio::placeholders::error));
@@ -192,7 +192,7 @@ namespace csi {
     }
 
     bool lowlevel_client::close() {
-        if (!_alreadyClosing.exchange(true)) {
+        if (!_already_closing.exchange(true)) {
             if(_resolve_in_progress)
                 _resolver.cancel();
 
@@ -204,7 +204,7 @@ namespace csi {
             _socket.shutdown(_socket.shutdown_both, ec);
             _socket.close(ec);
 
-            _alreadyClosing = false;
+            _already_closing = false;
         }
         return true;
     }

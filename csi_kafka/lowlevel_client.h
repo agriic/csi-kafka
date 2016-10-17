@@ -110,7 +110,7 @@ namespace csi {
       bool                                      _rx_in_progress;
       int32_t                                   _next_correlation_id;
 
-        std::atomic<bool>                       _alreadyClosing;
+        std::atomic<bool>                       _already_closing;
 
     };
   } // kafka
