@@ -287,39 +287,43 @@ namespace csi {
 
       int32_t nr_of_brokers;
       internal::decode_i32(str, nr_of_brokers);
-      response->brokers.reserve(nr_of_brokers);
-      for(int i = 0; i != nr_of_brokers; ++i) {
-        broker_data item;
-        internal::decode_i32(str, item.node_id);
-        internal::decode_string(str, item.host_name);
-        internal::decode_i32(str, item.port);
-        response->brokers.push_back(item);
-      }
-
-
-      int32_t nr_of_topics;
-      internal::decode_i32(str, nr_of_topics);
-      response->topics.reserve(nr_of_topics);
-      for(int i = 0; i != nr_of_topics; ++i) {
-        metadata_response::topic_data item;
-        internal::decode_i16(str, item.error_code);
-        internal::decode_string(str, item.topic_name);
-
-        int32_t nr_of_partitions;
-        internal::decode_i32(str, nr_of_partitions);
-        item.partitions.reserve(nr_of_partitions);
-
-        for(int j = 0; j != nr_of_partitions; ++j) {
-          metadata_response::topic_data::partition_data pd;
-          internal::decode_i16(str, pd.error_code);
-          internal::decode_i32(str, pd.partition_id);
-          internal::decode_i32(str, pd.leader);
-          internal::decode_arr(str, pd.replicas);
-          internal::decode_arr(str, pd.isr);
-          item.partitions.push_back(pd);
+      if (nr_of_brokers < 100 && nr_of_brokers >= 0) {
+        // check we are not receiving damaged data, most likely because of closing connection
+        response->brokers.reserve(nr_of_brokers);
+        for(int i = 0; i < nr_of_brokers; ++i) {
+          broker_data item;
+          internal::decode_i32(str, item.node_id);
+          internal::decode_string(str, item.host_name);
+          internal::decode_i32(str, item.port);
+          response->brokers.push_back(item);
         }
-        response->topics.push_back(item);
+
+
+        int32_t nr_of_topics;
+        internal::decode_i32(str, nr_of_topics);
+        response->topics.reserve(nr_of_topics);
+        for(int i = 0; i < nr_of_topics; ++i) {
+          metadata_response::topic_data item;
+          internal::decode_i16(str, item.error_code);
+          internal::decode_string(str, item.topic_name);
+
+          int32_t nr_of_partitions;
+          internal::decode_i32(str, nr_of_partitions);
+          item.partitions.reserve(nr_of_partitions);
+
+          for(int j = 0; j < nr_of_partitions; ++j) {
+            metadata_response::topic_data::partition_data pd;
+            internal::decode_i16(str, pd.error_code);
+            internal::decode_i32(str, pd.partition_id);
+            internal::decode_i32(str, pd.leader);
+            internal::decode_arr(str, pd.replicas);
+            internal::decode_arr(str, pd.isr);
+            item.partitions.push_back(pd);
+          }
+          response->topics.push_back(item);
+        }
       }
+
       return response;
     }
 
