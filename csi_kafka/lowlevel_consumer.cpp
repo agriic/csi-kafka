@@ -38,28 +38,23 @@ namespace csi {
     lowlevel_consumer::~lowlevel_consumer() {
       _client.close();
       _metrics_timer.cancel();
-        _ping_timer.cancel();
+      _ping_timer.cancel();
     }
 
-      void lowlevel_consumer::handle_ping_timer(const boost::system::error_code& ec) {
+    void lowlevel_consumer::handle_ping_timer(const boost::system::error_code& ec) {
 
-          _ping_timer.expires_from_now(_ping_timeout);
-          _ping_timer.async_wait(boost::bind(&lowlevel_consumer::handle_ping_timer, this, _1));
+      _ping_timer.expires_from_now(_ping_timeout);
+      _ping_timer.async_wait(boost::bind(&lowlevel_consumer::handle_ping_timer, this, _1));
 
-          if (ec) {
-              BOOST_LOG_TRIVIAL(error) << "Ping timer error - " << ec.message();
-              return;
-          }
-
-          if (_client.is_connected())
-          {
-              BOOST_LOG_TRIVIAL(info) << "KAFKA Metadata ping timer";
-
-              get_metadata_async([](rpc_result<metadata_response> r){
-                  BOOST_LOG_TRIVIAL(info) << "KAFKA Metadata ping timer -> Response received";
-              });
-          }
+      if (ec) {
+        BOOST_LOG_TRIVIAL(error) << "Ping timer error - " << ec.message();
+        return;
       }
+
+      if (_client.is_connected()) {
+        get_metadata_async([](rpc_result<metadata_response> r){});
+      }
+    }
 
     void lowlevel_consumer::handle_metrics_timer(const boost::system::error_code& ec) {
       if(ec)

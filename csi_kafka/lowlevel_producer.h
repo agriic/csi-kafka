@@ -65,6 +65,10 @@ namespace csi {
       int32_t                                    _tx_timeout;
       int32_t                                    _max_packet_size;
 
+      boost::asio::deadline_timer			          _ping_timer;
+      boost::posix_time::time_duration              _ping_timeout;
+      void handle_ping_timer(const boost::system::error_code& ec);
+
       //METRICS
       boost::asio::deadline_timer	               _metrics_timer;
       boost::posix_time::time_duration           _metrics_timeout;

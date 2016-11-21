@@ -17,6 +17,8 @@ namespace csi {
       _required_acks(required_acks),
       _tx_timeout(timeout),
       _max_packet_size(max_packet_size),
+      _ping_timer(io_service),
+      _ping_timeout(boost::posix_time::seconds(60)),
       _metrics_timer(io_service),
       _metrics_timeout(boost::posix_time::milliseconds(100)),
       __metrics_last_total_tx_kb(0),
@@ -34,11 +36,29 @@ namespace csi {
 
       _metrics_timer.expires_from_now(_metrics_timeout);
       _metrics_timer.async_wait([this](const boost::system::error_code& ec) { handle_metrics_timer(ec); });
+
+      _ping_timer.expires_from_now(_ping_timeout);
+      _ping_timer.async_wait(boost::bind(&lowlevel_producer::handle_ping_timer, this, _1));
     }
 
     lowlevel_producer::~lowlevel_producer() {
       _metrics_timer.cancel();
       _client.close();
+    }
+
+    void lowlevel_producer::handle_ping_timer(const boost::system::error_code& ec) {
+
+      _ping_timer.expires_from_now(_ping_timeout);
+      _ping_timer.async_wait(boost::bind(&lowlevel_producer::handle_ping_timer, this, _1));
+
+      if (ec) {
+        BOOST_LOG_TRIVIAL(error) << "Ping timer error - " << ec.message();
+        return;
+      }
+
+      if (_client.is_connected()) {
+        _client.get_metadata_async({ _topic }, [](rpc_result<metadata_response> r){});
+      }
     }
 
     void  lowlevel_producer::close() {
