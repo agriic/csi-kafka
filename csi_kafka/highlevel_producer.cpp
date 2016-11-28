@@ -164,10 +164,14 @@ namespace csi {
             //lets send all things that were collected before connecting
 //            std::deque<tx_item> ::reverse_iterator cursor = _tx_queue.rbegin();
 
-            while(_tx_queue.size()) {
+            while(_tx_queue.size())
+            {
               tx_item& item = *(_tx_queue.end() - 1);
-              uint32_t partition = item.hash % _partition2producers.size();
-              _partition2producers[partition]->send_async(item.msg, item.cb);
+              if (!_partition2producers.empty())
+              {
+                  uint32_t partition = item.hash % _partition2producers.size();
+                  _partition2producers[partition]->send_async(item.msg, item.cb);
+              }
               _tx_queue.pop_back();
             }
           }

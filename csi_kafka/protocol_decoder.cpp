@@ -117,6 +117,11 @@ namespace csi {
       internal::decode_i32(str, response->correlation_id);
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
+      if (nr_of_topics > 50 || nr_of_topics < 0) {
+        response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+        return response;
+      }
+
       response->topics.reserve(nr_of_topics);
       for(int i = 0; i != nr_of_topics; ++i) {
         produce_response::topic_data item;
@@ -124,6 +129,11 @@ namespace csi {
 
         int32_t items;
         internal::decode_i32(str, items);
+        if (items > 500 || items < 0) {
+          response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+          return response;
+        }
+
         item.partitions.reserve(items);
         for(int j = 0; j != items; ++j) {
           produce_response::topic_data::partition_data pr_item;
@@ -198,6 +208,11 @@ namespace csi {
       int16_t resulting_error_code = 0;
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
+      if (nr_of_topics > 50 || nr_of_topics < 0) {
+        response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+        return response;
+      }
+
       response->topics.reserve(nr_of_topics);
 
       for(int i = 0; i != nr_of_topics; ++i) {
@@ -206,6 +221,11 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
+        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+          response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+          return response;
+        }
+
         topic_item.partitions.reserve(nr_of_partitions);
         for(int j = 0; j != nr_of_partitions; ++j) {
           std::shared_ptr<fetch_response::topic_data::partition_data> partition_data = std::make_shared<fetch_response::topic_data::partition_data>();
@@ -247,6 +267,11 @@ namespace csi {
 
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
+      if (nr_of_topics > 50 || nr_of_topics < 0) {
+        response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+        return response;
+      }
+
       response->topics.reserve(nr_of_topics);
       for(int i = 0; i != nr_of_topics; ++i) {
         offset_response::topic_data item;
@@ -254,6 +279,11 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
+        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+          response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+          return response;
+        }
+
         item.partitions.reserve(nr_of_partitions);
         for(int j = 0; j != nr_of_partitions; ++j) {
           offset_response::topic_data::partition_data pd;
@@ -287,41 +317,53 @@ namespace csi {
 
       int32_t nr_of_brokers;
       internal::decode_i32(str, nr_of_brokers);
-      if (nr_of_brokers < 100 && nr_of_brokers >= 0) {
-        // check we are not receiving damaged data, most likely because of closing connection
-        response->brokers.reserve(nr_of_brokers);
-        for(int i = 0; i < nr_of_brokers; ++i) {
-          broker_data item;
-          internal::decode_i32(str, item.node_id);
-          internal::decode_string(str, item.host_name);
-          internal::decode_i32(str, item.port);
-          response->brokers.push_back(item);
+      if (nr_of_brokers > 50 || nr_of_brokers < 0) {
+        response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+        return response;
+      }
+
+      // check we are not receiving damaged data, most likely because of closing connection
+      response->brokers.reserve(nr_of_brokers);
+      for(int i = 0; i < nr_of_brokers; ++i) {
+        broker_data item;
+        internal::decode_i32(str, item.node_id);
+        internal::decode_string(str, item.host_name);
+        internal::decode_i32(str, item.port);
+        response->brokers.push_back(item);
+      }
+
+
+      int32_t nr_of_topics;
+      internal::decode_i32(str, nr_of_topics);
+      if (nr_of_topics > 50 || nr_of_topics < 0) {
+        response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+        return response;
+      }
+
+      response->topics.reserve(nr_of_topics);
+      for(int i = 0; i < nr_of_topics; ++i) {
+        metadata_response::topic_data item;
+        internal::decode_i16(str, item.error_code);
+        internal::decode_string(str, item.topic_name);
+
+        int32_t nr_of_partitions;
+        internal::decode_i32(str, nr_of_partitions);
+        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+          response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+          return response;
         }
 
-
-        int32_t nr_of_topics;
-        internal::decode_i32(str, nr_of_topics);
-        response->topics.reserve(nr_of_topics);
-        for(int i = 0; i < nr_of_topics; ++i) {
-          metadata_response::topic_data item;
-          internal::decode_i16(str, item.error_code);
-          internal::decode_string(str, item.topic_name);
-
-          int32_t nr_of_partitions;
-          internal::decode_i32(str, nr_of_partitions);
-          item.partitions.reserve(nr_of_partitions);
-
-          for(int j = 0; j < nr_of_partitions; ++j) {
-            metadata_response::topic_data::partition_data pd;
-            internal::decode_i16(str, pd.error_code);
-            internal::decode_i32(str, pd.partition_id);
-            internal::decode_i32(str, pd.leader);
-            internal::decode_arr(str, pd.replicas);
-            internal::decode_arr(str, pd.isr);
-            item.partitions.push_back(pd);
-          }
-          response->topics.push_back(item);
+        item.partitions.reserve(nr_of_partitions);
+        for(int j = 0; j < nr_of_partitions; ++j) {
+          metadata_response::topic_data::partition_data pd;
+          internal::decode_i16(str, pd.error_code);
+          internal::decode_i32(str, pd.partition_id);
+          internal::decode_i32(str, pd.leader);
+          internal::decode_arr(str, pd.replicas);
+          internal::decode_arr(str, pd.isr);
+          item.partitions.push_back(pd);
         }
+        response->topics.push_back(item);
       }
 
       return response;
@@ -338,6 +380,11 @@ namespace csi {
 
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
+      if (nr_of_topics > 50 || nr_of_topics < 0) {
+        response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+        return response;
+      }
+
       response->topics.reserve(nr_of_topics);
       for(int i = 0; i != nr_of_topics; ++i) {
         offset_commit_response::topic_data item;
@@ -345,6 +392,11 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
+        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+          response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+          return response;
+        }
+
         item.partitions.reserve(nr_of_partitions);
         for(int j = 0; j != nr_of_partitions; ++j) {
           offset_commit_response::topic_data::partition_data pd;
@@ -370,6 +422,11 @@ namespace csi {
 
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
+      if (nr_of_topics > 50 || nr_of_topics < 0) {
+        response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+        return response;
+      }
+
       response->topics.reserve(nr_of_topics);
       for(int i = 0; i != nr_of_topics; ++i) {
         offset_fetch_response::topic_data item;
@@ -377,6 +434,11 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
+        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+          response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
+          return response;
+        }
+
         item.partitions.reserve(nr_of_partitions);
         for(int j = 0; j != nr_of_partitions; ++j) {
           offset_fetch_response::topic_data::partition_data pd;
