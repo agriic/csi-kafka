@@ -12,6 +12,8 @@ namespace csi {
   namespace kafka {
     namespace internal
     {
+      const int LOGICAL_ALLOCATION_LIMIT = 50;
+
       inline void decode_i08(std::istream& src, uint8_t* dst) { src.read((char*) dst, 1); }
       inline void decode_i16(std::istream& src, int16_t& dst) { uint16_t data; src.read((char*) &data, 2); dst = (int16_t) ntohs(data); }
       inline void decode_i32(std::istream& src, int32_t& dst) { uint32_t data; src.read((char*) &data, 4); dst = (int32_t) ntohl(data); }
@@ -117,7 +119,7 @@ namespace csi {
       internal::decode_i32(str, response->correlation_id);
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
-      if (nr_of_topics > 50 || nr_of_topics < 0) {
+      if (nr_of_topics > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_topics < 0) {
         response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
         return response;
       }
@@ -208,7 +210,7 @@ namespace csi {
       int16_t resulting_error_code = 0;
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
-      if (nr_of_topics > 50 || nr_of_topics < 0) {
+      if (nr_of_topics > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_topics < 0) {
         response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
         return response;
       }
@@ -221,7 +223,7 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
-        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+        if (nr_of_partitions > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_partitions < 0) {
           response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
           return response;
         }
@@ -267,7 +269,7 @@ namespace csi {
 
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
-      if (nr_of_topics > 50 || nr_of_topics < 0) {
+      if (nr_of_topics > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_topics < 0) {
         response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
         return response;
       }
@@ -279,7 +281,7 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
-        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+        if (nr_of_partitions > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_partitions < 0) {
           response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
           return response;
         }
@@ -317,7 +319,7 @@ namespace csi {
 
       int32_t nr_of_brokers;
       internal::decode_i32(str, nr_of_brokers);
-      if (nr_of_brokers > 50 || nr_of_brokers < 0) {
+      if (nr_of_brokers > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_brokers < 0) {
         response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
         return response;
       }
@@ -335,7 +337,7 @@ namespace csi {
 
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
-      if (nr_of_topics > 50 || nr_of_topics < 0) {
+      if (nr_of_topics > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_topics < 0) {
         response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
         return response;
       }
@@ -348,7 +350,7 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
-        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+        if (nr_of_partitions > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_partitions < 0) {
           response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
           return response;
         }
@@ -380,7 +382,7 @@ namespace csi {
 
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
-      if (nr_of_topics > 50 || nr_of_topics < 0) {
+      if (nr_of_topics > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_topics < 0) {
         response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
         return response;
       }
@@ -392,7 +394,7 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
-        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+        if (nr_of_partitions > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_partitions < 0) {
           response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
           return response;
         }
@@ -422,7 +424,7 @@ namespace csi {
 
       int32_t nr_of_topics;
       internal::decode_i32(str, nr_of_topics);
-      if (nr_of_topics > 50 || nr_of_topics < 0) {
+      if (nr_of_topics > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_topics < 0) {
         response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
         return response;
       }
@@ -434,7 +436,7 @@ namespace csi {
 
         int32_t nr_of_partitions;
         internal::decode_i32(str, nr_of_partitions);
-        if (nr_of_partitions > 50 || nr_of_partitions < 0) {
+        if (nr_of_partitions > internal::LOGICAL_ALLOCATION_LIMIT || nr_of_partitions < 0) {
           response.ec.ec1 = make_error_code(boost::system::errc::bad_message);
           return response;
         }

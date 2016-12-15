@@ -166,7 +166,7 @@ namespace csi {
 
             while(_tx_queue.size())
             {
-              tx_item& item = *(_tx_queue.end() - 1);
+              tx_item& item = _tx_queue.back();
               if (!_partition2producers.empty())
               {
                   uint32_t partition = item.hash % _partition2producers.size();
