@@ -204,6 +204,12 @@ namespace csi {
             _socket.shutdown(_socket.shutdown_both, ec);
             _socket.close(ec);
 
+            _rx_queue.clear();
+            _tx_queue.clear();
+
+            _rx_in_progress = false;
+            _tx_in_progress = false;
+
             _already_closing = false;
         }
         return true;

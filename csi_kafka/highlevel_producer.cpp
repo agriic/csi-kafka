@@ -137,9 +137,10 @@ namespace csi {
             });
           }
         }
-        _timer.expires_from_now(_timeout);
-        _timer.async_wait(boost::bind(&highlevel_producer::handle_timer, this, boost::asio::placeholders::error));
       });
+
+      _timer.expires_from_now(_timeout);
+      _timer.async_wait(boost::bind(&highlevel_producer::handle_timer, this, boost::asio::placeholders::error));
     }
 
     void highlevel_producer::handle_response(rpc_result<metadata_response> result) {
