@@ -164,7 +164,7 @@ namespace csi {
     }
 
     void highlevel_consumer::_try_connect_brokers() {
-      _connect_async([this](const boost::system::error_code& ec) {});
+      _connect_async([](const boost::system::error_code&) {});
 
       _timer.expires_from_now(_timeout);
       _timer.async_wait(boost::bind(&highlevel_consumer::handle_timer, this, boost::asio::placeholders::error));
