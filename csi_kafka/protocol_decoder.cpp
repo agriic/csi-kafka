@@ -149,7 +149,7 @@ namespace csi {
         }
         response->topics.push_back(item);
       }
-      response.ec.ec2 = (csi::kafka::error_codes) resulting_error_code;
+      response.ec.ec2 = static_cast<csi::kafka::error_codes>(resulting_error_code);
       return response;
     }
 
