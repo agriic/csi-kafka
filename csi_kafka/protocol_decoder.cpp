@@ -108,6 +108,7 @@ namespace csi {
     //ErrorCode = > int16
     //Offset = > int64
     rpc_result<produce_response> parse_produce_response(const char* buffer, size_t len) {
+      int16_t resulting_error_code = 0;
       rpc_result<produce_response> response(new produce_response());
       boost::iostreams::stream<boost::iostreams::array_source> str(buffer, len);
 
@@ -141,11 +142,14 @@ namespace csi {
           produce_response::topic_data::partition_data pr_item;
           internal::decode_i32(str, pr_item.partition_id);
           internal::decode_i16(str, pr_item._error_code);
+          if (pr_item._error_code)
+            resulting_error_code = pr_item._error_code;
           internal::decode_i64(str, pr_item.offset); // should we read this field if error_code != 0 ???? TBD KOLLA
           item.partitions.push_back(pr_item);
         }
         response->topics.push_back(item);
       }
+      response.ec.ec2 = (csi::kafka::error_codes) resulting_error_code;
       return response;
     }
 
